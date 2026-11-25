@@ -746,12 +746,12 @@ function updateTelemetryGrid(nid, p, wire) {
   if (selectedNodeId && selectedNodeId !== nid && selectedNodeId !== "ALL") return;
 
   $("activeNodeLabel").textContent = `${nid} (${p.callsign || "ACTIVE"})`;
-  $("teleLatLon").textContent = `${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}`;
-  $("teleAlt").textContent = `${p.alt_agl.toFixed(1)}m (MSL: ${p.alt_msl.toFixed(1)}m)`;
-  $("teleSpeed").textContent = `${p.ground_speed.toFixed(1)} m/s (${(p.ground_speed*3.6).toFixed(0)} km/h)`;
-  $("teleHeading").textContent = `${p.heading.toFixed(1)}° (${getCompassDir(p.heading)})`;
-  $("teleAttitude").textContent = `${p.pitch.toFixed(1)}° / ${p.roll.toFixed(1)}°`;
-  $("teleBattery").textContent = `${p.battery_v.toFixed(2)}V (${p.battery_pct.toFixed(0)}%)`;
+  $("teleLatLon").textContent = `${Number(p.lat ?? 28.6139).toFixed(5)}, ${Number(p.lon ?? 77.2090).toFixed(5)}`;
+  $("teleAlt").textContent = `${Number(p.alt_agl ?? 0).toFixed(1)}m (MSL: ${Number(p.alt_msl ?? 0).toFixed(1)}m)`;
+  $("teleSpeed").textContent = `${Number(p.ground_speed ?? 0).toFixed(1)} m/s (${(Number(p.ground_speed ?? 0)*3.6).toFixed(0)} km/h)`;
+  $("teleHeading").textContent = `${Number(p.heading ?? 0).toFixed(1)}° (${getCompassDir(p.heading)})`;
+  $("teleAttitude").textContent = `${Number(p.pitch ?? 0).toFixed(1)}° / ${Number(p.roll ?? 0).toFixed(1)}°`;
+  $("teleBattery").textContent = `${Number(p.battery_v ?? 22.2).toFixed(2)}V (${Number(p.battery_pct ?? 100).toFixed(0)}%)`;
   $("teleBattery").className = "t-val " + (p.battery_pct < 25 ? "red" : "green");
   $("teleGeofenceDist").textContent = `${p.geofence_dist}m / ${p.geofence_radius}m`;
   $("teleMgrs").textContent = p.mgrs_coords || "--";
@@ -761,7 +761,7 @@ function updateTelemetryGrid(nid, p, wire) {
   $("teleEve").textContent = eveActive ? "BREACH // DEFCON 1" : "CLEAR";
   $("teleEve").className = "t-val " + (eveActive ? "red" : "green");
 
-  $("homeCoordText").textContent = `${p.home_lat.toFixed(4)}, ${p.home_lon.toFixed(4)}`;
+  $("homeCoordText").textContent = `${Number(p.home_lat ?? 28.6139).toFixed(4)}, ${Number(p.home_lon ?? 77.2090).toFixed(4)}`;
   $("geofenceRadiusText").textContent = `${p.geofence_radius}m`;
 }
 
@@ -959,7 +959,7 @@ function draw3dFlightHud() {
   ctx.fillText(`SPD`, 32, cy - 72);
   ctx.fillStyle = "#fff";
   ctx.font = "bold 13px monospace";
-  ctx.fillText(`${speed.toFixed(1)}`, 28, cy);
+  ctx.fillText(`${Number(speed ?? 0).toFixed(1)}`, 28, cy);
   ctx.font = "8px monospace";
   ctx.fillText(`m/s`, 38, cy + 15);
 
@@ -973,7 +973,7 @@ function draw3dFlightHud() {
   ctx.fillText(`ALT`, w - 62, cy - 72);
   ctx.fillStyle = "#fff";
   ctx.font = "bold 13px monospace";
-  ctx.fillText(`${alt.toFixed(0)}m`, w - 68, cy);
+  ctx.fillText(`${Number(alt ?? 0).toFixed(0)}m`, w - 68, cy);
   ctx.font = "8px monospace";
   ctx.fillText(`AGL`, w - 58, cy + 15);
 
@@ -983,7 +983,7 @@ function draw3dFlightHud() {
   ctx.strokeRect(cx - 100, 15, 200, 30);
   ctx.fillStyle = "var(--amber)";
   ctx.font = "bold 12px monospace";
-  ctx.fillText(`HDG: ${heading.toFixed(0)}° (${getCompassDir(heading)})`, cx - 50, 35);
+  ctx.fillText(`HDG: ${Number(heading ?? 0).toFixed(0)}° (${getCompassDir(heading)})`, cx - 50, 35);
 }
 
 /* ==========================================================================
