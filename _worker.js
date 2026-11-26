@@ -98,21 +98,27 @@ async function runSwarmCycle() {
       seq_no: drone.seq,
       lat: drone.lat,
       lon: drone.lon,
-      alt: drone.alt,
-      speed: drone.speed,
+      alt_agl: drone.alt,
+      alt_msl: drone.alt + 230,
+      ground_speed: drone.speed,
       heading: drone.heading,
-      battery: drone.battery,
+      battery_pct: drone.battery,
+      battery_v: +(14.2 + (drone.battery / 100) * 2.6).toFixed(2),
       pitch: (Math.random() - 0.5) * 4.0,
       roll: (Math.random() - 0.5) * 3.0,
       yaw: drone.heading,
       gps_satellites: 18,
       hdop: 0.8,
-      mode: "AUTO_MISSION",
+      flight_mode: "AUTO_MISSION",
       armed: true,
+      geofence_dist: 120,
+      geofence_radius: 1500,
+      home_lat: 31.6340,
+      home_lon: 74.8723,
       fhss_channel: Math.floor(Math.random() * 64) + 1,
-      fhss_freq_mhz: 2400 + Math.floor(Math.random() * 80),
+      rf_freq_mhz: 2400 + Math.floor(Math.random() * 80),
       mgrs: "43RGS" + Math.floor(drone.lat * 1000) + Math.floor(drone.lon * 1000),
-      detected_targets: [
+      recon_targets: [
         { type: "RADAR_SAM6", label: "AIR DEFENSE RADAR", confidence: 0.94, range_m: 840 }
       ]
     };
@@ -151,6 +157,11 @@ export default {
           const data = JSON.parse(event.data);
           const type = data.type;
 
+          if (data.token !== AUTH_TOKEN) {
+            server.send(JSON.stringify({ type: "error", message: "Unauthorized" }));
+            return;
+          }
+
           if (type === "handshake") {
             server.send(JSON.stringify({
               type: "handshake_ack",
@@ -160,6 +171,8 @@ export default {
               quantum_layer: "BB84 QKD + ML-KEM-768 PQC",
               timestamp: new Date().toISOString()
             }));
+          } else if (type === "heartbeat") {
+            server.send(JSON.stringify({ type: "heartbeat_ack", ts: new Date().toISOString() }));
           } else if (type === "encrypted_command") {
             broadcastToClients({
               type: "encrypted_command",
@@ -189,8 +202,21 @@ export default {
               jamming_active: swarmState.jammingActive,
               timestamp: new Date().toISOString()
             });
-          } else if (type === "secure_telemetry" || type === "snapshot") {
-            broadcastToClients(data);
+          } else if (type === "secure_telemetry") {
+            broadcastToClients({
+              type: "secure_telemetry_broadcast",
+              from_node: data.node_id || "MOBILE-NODE",
+              label: data.node_id || "MOBILE-NODE",
+              wireframe: data.wireframe,
+              timestamp: new Date().toISOString()
+            });
+          } else if (type === "snapshot") {
+            broadcastToClients({
+              type: "snapshot_broadcast",
+              from_node: data.node_id || "MOBILE-NODE",
+              snapshot: data.snapshot,
+              timestamp: new Date().toISOString()
+            });
           }
         } catch (err) {}
       });

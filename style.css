@@ -136,8 +136,13 @@ body::before {
 .crypto-bar {
   grid-column: 1 / -1;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 0.45rem;
+}
+@media (max-width: 1100px) {
+  .crypto-bar {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .metric-card {

@@ -67,6 +67,10 @@ async def cleanup_node(node_id, reason=""):
     info = nodes.pop(node_id, None)
     if info:
         print(f"[SERVER] Node {node_id} ({info['label']}) disconnected {reason}")
+        try:
+            await info["ws"].close()
+        except Exception:
+            pass
         await broadcast({"type": "node_left", "from_node": node_id, "timestamp": utcnow()})
 
 

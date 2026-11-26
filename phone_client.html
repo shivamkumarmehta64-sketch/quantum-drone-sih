@@ -342,6 +342,9 @@ let cameraStream = null;
    ========================================================================== */
 
 async function deriveAesKey(seedStr) {
+  if (!window.crypto || !window.crypto.subtle) {
+    throw new Error("WebCrypto requires HTTPS or localhost.");
+  }
   const enc = new TextEncoder();
   const raw = enc.encode(`${TOKEN}:${seedStr}`);
   const hash = await window.crypto.subtle.digest("SHA-256", raw);

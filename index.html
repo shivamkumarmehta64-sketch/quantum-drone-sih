@@ -531,6 +531,8 @@ function speakTacticalVoice(text) {
    3. WebSocket Networking & Telemetry Routing
    ========================================================================== */
 
+let heartbeatTimer = null;
+
 function connect() {
   try {
     ws = new WebSocket(WS_URL);
@@ -552,6 +554,13 @@ function connect() {
       node_id: "GCS-TACTICAL-HQ",
       capabilities: ["display", "command", "aes_256_gcm", "pqc_kem", "swarm_coordinator", "fhss_ew"]
     }));
+
+    if (heartbeatTimer) clearInterval(heartbeatTimer);
+    heartbeatTimer = setInterval(() => {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: "heartbeat", token: TOKEN }));
+      }
+    }, 5000);
   };
 
   ws.onmessage = async (ev) => {
@@ -562,6 +571,10 @@ function connect() {
   };
 
   ws.onclose = () => {
+    if (heartbeatTimer) {
+      clearInterval(heartbeatTimer);
+      heartbeatTimer = null;
+    }
     $("c2LinkBadge").textContent = "C2 LINK: OFFLINE";
     $("c2LinkBadge").style.borderColor = "var(--red)";
     $("c2LinkBadge").style.color = "var(--red)";
@@ -1614,8 +1627,14 @@ function updateLeafletMarkers() {
   for (const [id, n] of nodes) {
     if (n.lat && n.lon) {
       if (!droneMarkers[id]) {
+        const popupEl = document.createElement('div');
+        const b = document.createElement('b');
+        b.textContent = String(n.label ?? id);
+        popupEl.appendChild(b);
+        popupEl.appendChild(document.createElement('br'));
+        popupEl.appendChild(document.createTextNode(`Speed: ${Number(n.speed ?? 0).toFixed(1)} m/s`));
         droneMarkers[id] = L.marker([n.lat, n.lon]).addTo(leafletMapObj)
-          .bindPopup(`<b>${n.label}</b><br>Speed: ${n.speed} m/s`);
+          .bindPopup(popupEl);
       } else {
         droneMarkers[id].setLatLng([n.lat, n.lon]);
       }

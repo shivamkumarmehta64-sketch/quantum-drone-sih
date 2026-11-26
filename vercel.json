@@ -3,12 +3,15 @@
   "cleanUrls": true,
   "routes": [
     {
+      "handle": "filesystem"
+    },
+    {
       "src": "/phone",
       "dest": "/phone_client.html"
     },
     {
       "src": "/(.*)",
-      "dest": "/"
+      "dest": "/index.html"
     }
   ]
 }
